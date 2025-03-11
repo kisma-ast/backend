@@ -5,8 +5,7 @@ pipeline {
         stage('Checkout Backend') {
             steps {
                 script {
-                    // Nettoyer l'espace de travail pour éviter les conflits
-                    deleteDir()
+                    deleteDir() // Nettoyage
                 }
                 git branch: 'main', url: 'https://github.com/kisma-ast/backend'
             }
@@ -16,25 +15,31 @@ pipeline {
             steps {
                 script {
                     if (!fileExists('build-backend.sh')) {
-                        error "Le fichier 'build-backend.sh' est introuvable ! Vérifiez qu'il est bien dans le dépôt."
+                        error "Le fichier 'build-backend.sh' est introuvable !"
                     }
                 }
             }
         }
 
-        stage('Install Composer') {
+        stage('Install PHP & Composer') {
             steps {
                 sh '''
-                # Vérifier si Composer est installé
-                if ! command -v composer &> /dev/null
-                then
+                # Installer PHP si non présent
+                if ! command -v php &> /dev/null; then
+                    echo "Installation de PHP..."
+                    apt update && apt install -y php-cli unzip curl
+                fi
+
+                # Installer Composer si non présent
+                if ! command -v composer &> /dev/null; then
                     echo "Installation de Composer..."
                     curl -sS https://getcomposer.org/installer | php
                     mv composer.phar /usr/local/bin/composer
                     chmod +x /usr/local/bin/composer
                 fi
 
-                # Vérifier l'installation
+                # Vérification
+                php -v
                 composer --version
                 '''
             }
@@ -47,7 +52,7 @@ pipeline {
                     echo "Installation des dépendances PHP..."
                     composer install --no-interaction --prefer-dist --optimize-autoloader
                 else
-                    echo "composer.json non trouvé, aucune dépendance à installer."
+                    echo "composer.json non trouvé."
                 fi
                 '''
             }
