@@ -8,24 +8,10 @@ pipeline {
             }
         }
 
-        stage('Checkout Frontend') {
-            steps {
-                git branch: 'main', url: 'https://github.com/kisma-ast/frontend'
-            }
-        }
-
         stage('Build Backend') {
             steps {
                 dir('backend') {
                     sh './build-backend.sh'
-                }
-            }
-        }
-
-        stage('Build Frontend') {
-            steps {
-                dir('frontend') {
-                    sh './build-frontend.sh'
                 }
             }
         }
