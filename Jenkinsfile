@@ -22,6 +22,37 @@ pipeline {
             }
         }
 
+        stage('Install Composer') {
+            steps {
+                sh '''
+                # Vérifier si Composer est installé
+                if ! command -v composer &> /dev/null
+                then
+                    echo "Installation de Composer..."
+                    curl -sS https://getcomposer.org/installer | php
+                    mv composer.phar /usr/local/bin/composer
+                    chmod +x /usr/local/bin/composer
+                fi
+
+                # Vérifier l'installation
+                composer --version
+                '''
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                if [ -f "composer.json" ]; then
+                    echo "Installation des dépendances PHP..."
+                    composer install --no-interaction --prefer-dist --optimize-autoloader
+                else
+                    echo "composer.json non trouvé, aucune dépendance à installer."
+                fi
+                '''
+            }
+        }
+
         stage('Set Permissions') {
             steps {
                 sh 'chmod +x build-backend.sh'
