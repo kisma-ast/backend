@@ -8,46 +8,39 @@ pipeline {
             }
         }
 
-        stage('Build Backend') {
+        stage('Install Dependencies') {
             steps {
-                script {
-                    dir('backend') {
-                        sh 'composer install'
-                        sh 'php artisan migrate'
-                    }
-                }
+                sh 'composer install --no-interaction --prefer-dist'
             }
         }
 
-        stage('Build Frontend') {
+        stage('Setup Environment') {
             steps {
-                script {
-                    dir('frontend') {
-                        sh 'npm install'
-                        sh 'npm run build'
-                    }
-                }
+                sh 'cp .env.example .env'
+                sh 'php artisan key:generate'
+                sh 'php artisan config:cache'
             }
         }
 
-       /* stage('Run Tests') {
+        stage('Run Migrations') {
             steps {
-                script {
-                    dir('backend') {
-                        sh 'php artisan test'
-                    }
-                    dir('frontend') {
-                        sh 'npm test'
-                    }
-                }
+                sh 'php artisan migrate --force'
+            }
+        }
+
+        /*
+        stage('Run Tests') {
+            steps {
+                sh 'php artisan test'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "Déploiement du frontend et du backend en cours..."
-                // Ajoute ici ton script de déploiement (Docker, SSH, ou autre)
+                echo "Déploiement en cours..."
+                // Ajoute ici ton script de déploiement (Docker, SSH, etc.)
             }
-        }*/
+        }
+        */
     }
 }
