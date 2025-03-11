@@ -2,45 +2,32 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout Backend') {
             steps {
                 git branch: 'main', url: 'https://github.com/kisma-ast/backend'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Checkout Frontend') {
             steps {
-                sh 'composer install --no-interaction --prefer-dist'
+                git branch: 'main', url: 'https://github.com/kisma-ast/frontend'
             }
         }
 
-        stage('Setup Environment') {
+        stage('Build Backend') {
             steps {
-                sh 'cp .env.example .env'
-                sh 'php artisan key:generate'
-                sh 'php artisan config:cache'
+                dir('backend') {
+                    sh './build-backend.sh'
+                }
             }
         }
 
-        stage('Run Migrations') {
+        stage('Build Frontend') {
             steps {
-                sh 'php artisan migrate --force'
+                dir('frontend') {
+                    sh './build-frontend.sh'
+                }
             }
         }
-
-        /*
-        stage('Run Tests') {
-            steps {
-                sh 'php artisan test'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo "Déploiement en cours..."
-                // Ajoute ici ton script de déploiement (Docker, SSH, etc.)
-            }
-        }
-        */
     }
 }
